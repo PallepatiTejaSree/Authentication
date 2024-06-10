@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase</title>
+</head>
+<body>
+    <lable>ID: </lable>
+    <input type="text" id="userid"><br><br>
+    <label>Firstname: </label>
+    <input type="text" id="fname"><br><br>
+    <label>Lastname: </label>
+    <input type="text" id="lname"><br><br>
+    <button id="add">ADD</button>
+    <button id="retrieve">RETRIEVE</button>
+    <button id="updateBtn">UPDATE</button>
+    <button id="deleteBtn">DELETE</button>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        
+        const firebaseConfig = {
+          apiKey: "AIzaSyDhjAtB0jtOyDs02YrFHRPBaL3Le_upowQ",
+          authDomain: "internal-e08e8.firebaseapp.com",
+          projectId: "internal-e08e8",
+          storageBucket: "internal-e08e8.appspot.com",
+          messagingSenderId: "852651206712",
+          appId: "1:852651206712:web:b1738d89bd9d999e005ecd"
+        };
+      
+        const app = initializeApp(firebaseConfig);
+        const db=getDatabase();
+        import {getDatabase,ref,child,get,set,update,remove} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js"
+
+        let id=document.getElementById('userid');
+        let fname=document.getElementById('fname');
+        let lname=document.getElementById('lname');
+        let add=document.getElementById('add');
+        let retrieve=document.getElementById('retrieve');
+        let updateEle=document.getElementById('updateBtn');
+        let deleteEle=document.getElementById('deleteBtn');
+
+        const addData=()=>{
+            const studentRef=ref(db,'student/');
+            get(studentRef).then(snapshot=>{
+                let newData=snapshot.exists()?snapshot.val():{};
+                newData[id.value]={
+                    ID:id.value,
+                    Firstname:fname.value,
+                    Lastname:lname.value
+                };
+                set(studentRef,newData).then(()=>{
+                    alert("Data added successfully!");
+                }).catch(error=>{
+                    alert("Unsuccessful");
+                    console.error(error);
+                });
+            }).catch(error=>{
+                alert("Error adding data");
+                console.log(error);
+            });
+        };
+        add.addEventListener('click',addData);
+
+        const retrievData=()=>{
+            const studentRef=ref(db,'student/');
+            const idToRetieve=id.value;
+            get(child(studentRef,idToRetieve)).then(snapshot=>{
+                if(snapshot.exists()){
+                    const data=snapshot.val();
+                    document.getElementById('fname').value=data.Firstname;
+                    document.getElementById('lname').value=data.Lastname;
+                }
+                else{
+                    alert("ID not found");
+                }
+            }).catch(error=>{
+                alert("Error retrieving data");
+                console.log(error);
+            })
+        }
+        retrieve.addEventListener('click',retrievData);
+
+        const updateData=()=>{
+            const studentRef=ref(db,'student/');
+            get(studentRef).then(snapshot=>{
+                if(snapshot.exists()){
+                    const data={...snapshot.val()};
+                    const keyToUpdate=id.value;
+                    if(data[keyToUpdate]){
+                        data[keyToUpdate].Firstname=fname.value;
+                        data[keyToUpdate].Lastname=lname.value;
+                        set(studentRef,data).then(()=>{
+                            alert("Data updated successfully");
+                        }).catch(error=>{
+                            alert("Unsuccessful");
+                            console.error(error);
+                        });
+                    }
+                    else{
+                        alert("Key not found");
+                    }
+                }
+                else{
+                    alert("key not found");
+                }
+            }).catch(error=>{
+                alert("Error retrieving data");
+                console.error(error);
+            });
+        };
+        updateEle.addEventListener('click',updateData);
+
+        const deleteData=()=>{
+            const studentRef=ref(db,'student/');
+            const idToDelete=id.value;
+            const childRef=child(studentRef,idToDelete);
+            get(childRef).then(snapshot=>{
+                if(snapshot.exists()){
+                    remove(childRef).then(()=>{
+                        alert("Data deleted successfully");
+                    }).catch(error=>{
+                        alert("Error deleting data");
+                        console.log(error);
+                    })
+                }
+                else{
+                    alert("Id not found");
+                }
+            }).catch(error=>{
+                alert("Error retriveing data");
+                console.error(error);
+            })
+        }
+        deleteEle.addEventListener('click',deleteData);
+
+      </script>
+</body>
+</html>
+
